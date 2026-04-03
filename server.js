@@ -46,7 +46,7 @@ app.post('/api/creatives', (req, res) => {
     const values = [id];
 
     const allowedFields = [
-      'persona', 'funnel_stage', 'offer', 'angle', 'hook_type', 'format',
+      'ad_name', 'persona', 'funnel_stage', 'offer', 'angle', 'hook_type', 'format',
       'hook_lines', 'headlines', 'primary_text', 'script', 'status',
       'classification', 'date_created', 'date_launched', 'spend', 'cpa',
       'ctr', 'hook_rate', 'hold_rate', 'created_by', 'week_number'
@@ -88,7 +88,7 @@ app.get('/api/creatives', (req, res) => {
   try {
     const filters = [];
     const values = [];
-    const filterableFields = ['status', 'classification', 'funnel_stage', 'persona', 'format', 'created_by', 'week_number'];
+    const filterableFields = ['status', 'classification', 'funnel_stage', 'persona', 'format', 'created_by', 'week_number', 'ad_name'];
 
     for (const f of filterableFields) {
       if (req.query[f]) {
@@ -124,7 +124,7 @@ app.patch('/api/creatives/:id', (req, res) => {
 
     const data = serializeJsonFields(req.body);
     const allowedFields = [
-      'persona', 'funnel_stage', 'offer', 'angle', 'hook_type', 'format',
+      'ad_name', 'persona', 'funnel_stage', 'offer', 'angle', 'hook_type', 'format',
       'hook_lines', 'headlines', 'primary_text', 'script', 'status',
       'classification', 'date_created', 'date_launched', 'spend', 'cpa',
       'ctr', 'hook_rate', 'hold_rate', 'created_by', 'week_number'

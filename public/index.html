@@ -49,7 +49,9 @@
   .badge-unvalidated { background: #374151; color: #9ca3af; }
   .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow-x: auto; }
   .filters { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
-  .filters select { background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.8rem; }
+  .filters select, .filters input[type="date"] { background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.8rem; }
+  .filters label { font-size: 0.75rem; color: var(--muted); display: flex; align-items: center; gap: 0.35rem; }
+  .date-range { display: flex; align-items: center; gap: 0.5rem; }
   .empty { text-align: center; padding: 3rem; color: var(--muted); }
   .timestamp { font-size: 0.75rem; color: var(--muted); }
   #loading { text-align: center; padding: 4rem; color: var(--muted); font-size: 1.1rem; }
@@ -148,11 +150,20 @@ function renderFilters(data) {
     return `<select data-filter="${name}"><option value="">All ${name}</option>${options.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`;
   }
 
+  // Get date range from data
+  const dates = data.creatives.map(c => c.date_created).filter(Boolean).sort();
+  const minDate = dates[0] || '';
+  const maxDate = dates[dates.length - 1] || '';
+
   document.getElementById('filters').innerHTML =
     makeSelect('status', statuses) +
     makeSelect('classification', classifications) +
     makeSelect('format', formats) +
-    makeSelect('funnel_stage', funnels);
+    makeSelect('funnel_stage', funnels) +
+    `<div class="date-range">
+      <label>From <input type="date" id="date-from" value="${minDate}" data-filter="date_from"></label>
+      <label>To <input type="date" id="date-to" value="${maxDate}" data-filter="date_to"></label>
+    </div>`;
 
   document.querySelectorAll('#filters select').forEach(sel => {
     sel.addEventListener('change', () => {
@@ -160,10 +171,18 @@ function renderFilters(data) {
       renderTable();
     });
   });
+
+  document.querySelectorAll('#filters input[type="date"]').forEach(inp => {
+    inp.addEventListener('change', () => {
+      currentFilters[inp.dataset.filter] = inp.value;
+      renderTable();
+    });
+  });
 }
 
 function renderTable() {
   const cols = [
+    { key: 'ad_name', label: 'Ad ID' },
     { key: 'persona', label: 'Persona' },
     { key: 'funnel_stage', label: 'Funnel' },
     { key: 'format', label: 'Format' },
@@ -174,6 +193,7 @@ function renderTable() {
     { key: 'spend', label: 'Spend', fmt: fmtMoney },
     { key: 'cpa', label: 'CPA', fmt: fmtMoney },
     { key: 'ctr', label: 'CTR', fmt: fmtPct },
+    { key: 'date_created', label: 'Created' },
     { key: 'week_number', label: 'Week' },
     { key: 'created_by', label: 'Created By' },
   ];
@@ -182,7 +202,10 @@ function renderTable() {
 
   let filtered = allCreatives;
   for (const [k, v] of Object.entries(currentFilters)) {
-    if (v) filtered = filtered.filter(c => c[k] === v);
+    if (!v) continue;
+    if (k === 'date_from') { filtered = filtered.filter(c => c.date_created >= v); continue; }
+    if (k === 'date_to') { filtered = filtered.filter(c => c.date_created <= v); continue; }
+    filtered = filtered.filter(c => c[k] === v);
   }
 
   if (filtered.length === 0) {

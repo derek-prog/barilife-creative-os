@@ -48,6 +48,13 @@ function init() {
     CREATE INDEX IF NOT EXISTS idx_creatives_format ON creatives(format);
     CREATE INDEX IF NOT EXISTS idx_creatives_week_number ON creatives(week_number);
   `);
+
+  // Migration: add ad_name column if missing
+  const cols = db.prepare("PRAGMA table_info(creatives)").all().map(c => c.name);
+  if (!cols.includes('ad_name')) {
+    db.exec("ALTER TABLE creatives ADD COLUMN ad_name TEXT");
+    db.exec("CREATE INDEX IF NOT EXISTS idx_creatives_ad_name ON creatives(ad_name)");
+  }
   db.close();
 }
 
