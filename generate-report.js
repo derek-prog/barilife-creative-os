@@ -43,7 +43,8 @@ const data = JSON.stringify({
 });
 
 const template = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf8');
-const report = template.replace('__REPORT_DATA__', data);
+const safeData = data.replace(/<\//g, '<\\/');
+const report = template.replace('__REPORT_DATA__', safeData);
 
 // Write to both locations
 fs.writeFileSync(path.join(__dirname, 'docs', 'index.html'), report);

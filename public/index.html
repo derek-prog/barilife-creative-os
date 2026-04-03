@@ -122,6 +122,10 @@ function fmt(n, dec = 2) {
 }
 function fmtMoney(n) { return n == null ? '-' : '$' + fmt(n); }
 function fmtPct(n) { return n == null ? '-' : (n * 100).toFixed(1) + '%'; }
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 
 function renderSummary(data) {
   const s = data.summary;
@@ -143,7 +147,7 @@ function renderBarChart(title, items, labelKey, cssClass) {
   const max = Math.max(...items.map(i => i.count));
   const bars = items.map(i => `
     <div class="bar-row">
-      <div class="bar-label">${i[labelKey] || 'null'}</div>
+      <div class="bar-label">${escapeHtml(i[labelKey]) || 'null'}</div>
       <div class="bar-track"><div class="bar-fill ${cssClass}" style="width:${Math.max((i.count/max)*100, 8)}%">${i.count}</div></div>
     </div>
   `).join('');
@@ -168,7 +172,7 @@ function renderFilters(data) {
   const funnels = [...new Set(data.creatives.map(c => c.funnel_stage).filter(Boolean))];
 
   function makeSelect(name, options) {
-    return `<select data-filter="${name}"><option value="">All ${name}</option>${options.map(o => `<option value="${o}">${o}</option>`).join('')}</select>`;
+    return `<select data-filter="${escapeHtml(name)}"><option value="">All ${escapeHtml(name)}</option>${options.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('')}</select>`;
   }
 
   // Get date range from data
@@ -205,9 +209,9 @@ function renderTable() {
   function fmtAction(classification) {
     const map = { winner: 'SCALE', near_winner: 'WATCH', loser: 'KILL', unvalidated: 'TEST' };
     const cssMap = { winner: 'scale', near_winner: 'watch', loser: 'kill', unvalidated: 'test' };
-    const label = map[classification] || classification || '-';
+    const label = map[classification] || escapeHtml(classification) || '-';
     const css = cssMap[classification] || 'test';
-    return `<span class="action-${css}">${label}</span>`;
+    return `<span class="action-${escapeHtml(css)}">${label}</span>`;
   }
 
   const cols = [
@@ -242,9 +246,9 @@ function renderTable() {
   document.getElementById('table-body').innerHTML = filtered.map(c => '<tr>' + cols.map(col => {
     if (col.custom) return `<td>${col.custom(c)}</td>`;
     const val = c[col.key];
-    if (col.badge && val) return `<td><span class="badge badge-${val}">${val}</span></td>`;
+    if (col.badge && val) return `<td><span class="badge badge-${escapeHtml(val)}">${escapeHtml(val)}</span></td>`;
     if (col.fmt) return `<td>${col.fmt(val)}</td>`;
-    return `<td>${val != null ? val : '-'}</td>`;
+    return `<td>${val != null ? escapeHtml(val) : '-'}</td>`;
   }).join('') + '</tr>').join('');
 }
 
