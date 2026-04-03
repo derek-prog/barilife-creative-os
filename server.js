@@ -261,7 +261,8 @@ app.post('/api/generate-report', (req, res) => {
     });
 
     const template = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf8');
-    const report = template.replace('__REPORT_DATA__', data);
+    const safeData = data.replace(/<\//g, '<\\/');
+    const report = template.replace('__REPORT_DATA__', safeData);
     fs.writeFileSync(path.join(__dirname, 'public', 'report.html'), report);
 
     res.json({ status: 'ok', path: 'public/report.html', creatives_count: creatives.length });
