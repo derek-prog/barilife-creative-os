@@ -98,8 +98,10 @@ app.get('/api/creatives', (req, res) => {
     }
 
     const where = filters.length > 0 ? `WHERE ${filters.join(' AND ')}` : '';
-    const limit = Math.min(parseInt(req.query.limit) || 100, 1000);
-    const offset = parseInt(req.query.offset) || 0;
+    const rawLimit = parseInt(req.query.limit);
+    const limit = Math.min(Math.max(Number.isNaN(rawLimit) ? 100 : rawLimit, 0), 1000);
+    const rawOffset = parseInt(req.query.offset);
+    const offset = Math.max(Number.isNaN(rawOffset) ? 0 : rawOffset, 0);
 
     const rows = db.prepare(`SELECT * FROM creatives ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`).all(...values, limit, offset);
     const countRow = db.prepare(`SELECT COUNT(*) as total FROM creatives ${where}`).get(...values);
