@@ -47,6 +47,16 @@
   .badge-near_winner { background: #1e3a5f; color: #60a5fa; }
   .badge-loser { background: #450a0a; color: #f87171; }
   .badge-unvalidated { background: #374151; color: #9ca3af; }
+  .action-scale { color: #4ade80; font-weight: 700; }
+  .action-watch { color: #60a5fa; font-weight: 700; }
+  .action-kill { color: #f87171; font-weight: 700; }
+  .action-test { color: #9ca3af; }
+  .criteria { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 2rem; }
+  .criteria h3 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 0.75rem; }
+  .criteria-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+  .criteria-item { padding: 0.75rem; border-radius: 8px; background: var(--bg); }
+  .criteria-item h4 { font-size: 0.8rem; margin-bottom: 0.25rem; }
+  .criteria-item p { font-size: 0.75rem; color: var(--muted); }
   .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow-x: auto; }
   .filters { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
   .filters select, .filters input[type="date"] { background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.8rem; }
@@ -68,6 +78,16 @@
 <div class="cards" id="summary-cards"></div>
 
 <div class="chart-row" id="charts"></div>
+
+<div class="criteria">
+  <h3>Scale / Watch / Kill Criteria</h3>
+  <div class="criteria-grid">
+    <div class="criteria-item"><h4 class="action-scale">SCALE (Winner)</h4><p>CPA &le; $25 &bull; &ge; 5 purchases &bull; &ge; $100 spend</p></div>
+    <div class="criteria-item"><h4 class="action-watch">WATCH (Near Winner)</h4><p>CPA &le; $40 &bull; &ge; 2 purchases &bull; &ge; $50 spend</p></div>
+    <div class="criteria-item"><h4 class="action-kill">KILL (Loser)</h4><p>CPA &gt; $40 or 0 purchases &bull; &ge; $30 spend</p></div>
+    <div class="criteria-item"><h4 class="action-test">TEST (Unvalidated)</h4><p>&lt; $30 spend &mdash; not enough data yet</p></div>
+  </div>
+</div>
 
 <div class="section">
   <h2>All Creatives</h2>
@@ -182,21 +202,26 @@ function renderFilters(data) {
 }
 
 function renderTable() {
+  function fmtAction(classification) {
+    const map = { winner: 'SCALE', near_winner: 'WATCH', loser: 'KILL', unvalidated: 'TEST' };
+    const cssMap = { winner: 'scale', near_winner: 'watch', loser: 'kill', unvalidated: 'test' };
+    const label = map[classification] || classification || '-';
+    const css = cssMap[classification] || 'test';
+    return `<span class="action-${css}">${label}</span>`;
+  }
+
   const cols = [
     { key: 'ad_name', label: 'Ad ID' },
-    { key: 'persona', label: 'Persona' },
+    { key: 'classification', label: 'Action', custom: (c) => fmtAction(c.classification) },
+    { key: 'status', label: 'Status', badge: true },
     { key: 'funnel_stage', label: 'Funnel' },
     { key: 'format', label: 'Format' },
-    { key: 'status', label: 'Status', badge: true },
-    { key: 'classification', label: 'Class.', badge: true },
-    { key: 'hook_type', label: 'Hook Type' },
-    { key: 'offer', label: 'Offer' },
     { key: 'spend', label: 'Spend', fmt: fmtMoney },
     { key: 'cpa', label: 'CPA', fmt: fmtMoney },
     { key: 'ctr', label: 'CTR', fmt: fmtPct },
     { key: 'date_created', label: 'Created' },
     { key: 'week_number', label: 'Week' },
-    { key: 'created_by', label: 'Created By' },
+    { key: 'created_by', label: 'Source' },
   ];
 
   document.getElementById('table-head').innerHTML = '<tr>' + cols.map(c => `<th>${c.label}</th>`).join('') + '</tr>';
@@ -215,6 +240,7 @@ function renderTable() {
   }
 
   document.getElementById('table-body').innerHTML = filtered.map(c => '<tr>' + cols.map(col => {
+    if (col.custom) return `<td>${col.custom(c)}</td>`;
     const val = c[col.key];
     if (col.badge && val) return `<td><span class="badge badge-${val}">${val}</span></td>`;
     if (col.fmt) return `<td>${col.fmt(val)}</td>`;

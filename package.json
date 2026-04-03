@@ -5,6 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "sync": "node sync-meta.js",
+    "sync:deploy": "node sync-meta.js && node generate-report.js && git add docs/index.html && git commit -m 'Update report' && git push",
     "report": "node generate-report.js",
     "deploy": "./deploy.sh",
     "deploy:setup": "./deploy.sh --setup",
