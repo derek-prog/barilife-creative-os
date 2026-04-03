@@ -1,0 +1,21 @@
+{
+  "name": "creative-os",
+  "version": "1.0.0",
+  "description": "Creative OS database — central creative asset store for Bari Life",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "report": "node generate-report.js",
+    "deploy": "./deploy.sh",
+    "deploy:setup": "./deploy.sh --setup",
+    "init-db": "node -e \"require('./db').init(); console.log('DB initialized')\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "better-sqlite3": "^12.8.0",
+    "express": "^5.2.1"
+  }
+}

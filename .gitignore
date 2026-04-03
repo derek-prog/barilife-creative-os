@@ -1,0 +1,4 @@
+node_modules/
+creative_os.db
+creative_os.db-wal
+creative_os.db-shm
