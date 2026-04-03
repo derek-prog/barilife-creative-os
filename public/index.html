@@ -82,13 +82,14 @@
 
 </div>
 
-<script>
-// If embedded data exists (static report), use it. Otherwise fetch from API.
-const EMBEDDED_DATA = '__REPORT_DATA__';
+<script type="application/json" id="report-data">__REPORT_DATA__</script>
 
+<script>
 async function loadData() {
-  if (EMBEDDED_DATA && !EMBEDDED_DATA.startsWith('__')) {
-    return JSON.parse(EMBEDDED_DATA);
+  const el = document.getElementById('report-data');
+  const raw = el ? el.textContent.trim() : '';
+  if (raw && !raw.startsWith('__')) {
+    return JSON.parse(raw);
   }
   // Live mode: fetch from API
   const [exportRes] = await Promise.all([fetch('/api/export')]);
